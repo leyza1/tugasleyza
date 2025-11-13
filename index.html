@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Tebak Angka - Lesa</title>
+
+  <!-- Import SweetAlert2 dari CDN (WAJIB sebelum script game) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #a0e3ff, #f8bfff);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+
+    h1 {
+      background: -webkit-linear-gradient(#0078ff, #7f00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #7f00ff; }
+      to { text-shadow: 0 0 15px #0078ff; }
+    }
+
+    .card {
+      background: #ffffffcc;
+      padding: 25px 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+
+    input {
+      padding: 10px;
+      width: 80%;
+      border: 2px solid #7f00ff;
+      border-radius: 10px;
+      font-size: 1em;
+      margin-top: 10px;
+      outline: none;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      background: linear-gradient(135deg, #0078ff, #7f00ff);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #7f00ff;
+    }
+
+    #hasil {
+      margin-top: 15px;
+      font-size: 1.1em;
+      font-weight: bold;
+      min-height: 30px;
+    }
+
+    #percobaan {
+      color: #444;
+      margin-top: 10px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 Game Tebak Angka</h1>
+  <div class="card">
+    <p>Tebak angka rahasia antara <b>1 - 20</b>!</p>
+    <input type="number" id="tebakan" placeholder="Masukkan angka kamu">
+    <div>
+      <button id="btnTebak">Tebak!</button>
+      <button id="btnReset">Ulangi 🔄</button>
+    </div>
+    <p id="hasil"></p>
+    <p id="percobaan">Percobaan: 0</p>
+  </div>
+
+  <script>
+    let angkaRahasia = Math.floor(Math.random() * 20) + 1;
+    let jumlahPercobaan = 0;
+    const maxPercobaan = 5;
+
+    const input = document.getElementById("tebakan");
+    const hasil = document.getElementById("hasil");
+    const percobaanText = document.getElementById("percobaan");
+    const btnTebak = document.getElementById("btnTebak");
+    const btnReset = document.getElementById("btnReset");
+
+    btnTebak.addEventListener("click", tebakAngka);
+    btnReset.addEventListener("click", resetGame);
+
+    function tebakAngka() {
+      const tebakan = parseInt(input.value);
+
+      if (isNaN(tebakan) || tebakan < 1 || tebakan > 20) {
+        Swal.fire({
+          icon: 'warning',
+          title: '⚠️ Angka tidak valid',
+          text: 'Masukkan angka antara 1 sampai 20!',
+          confirmButtonColor: '#7f00ff'
+        });
+        return;
+      }
+
+      jumlahPercobaan++;
+      percobaanText.textContent = `Percobaan: ${jumlahPercobaan}`;
+
+      if (tebakan === angkaRahasia) {
+        hasil.textContent = `🎉 Benar! Angka ${angkaRahasia}.`;
+        hasil.style.color = "green";
+        confetti();
+
+        Swal.fire({
+          icon: 'success',
+          title: '🎉 Selamat!',
+          text: `Kamu menebak dengan benar dalam ${jumlahPercobaan} percobaan!`,
+          confirmButtonText: 'Main lagi!',
+          confirmButtonColor: '#4CAF50'
+        }).then(resetGame);
+
+        input.disabled = true;
+      } else if (tebakan < angkaRahasia) {
+        hasil.textContent = "🔽 Terlalu rendah! Coba angka lebih besar.";
+        hasil.style.color = "orange";
+      } else {
+        hasil.textContent = "🔼 Terlalu tinggi! Coba angka lebih kecil.";
+        hasil.style.color = "orange";
+      }
+
+      if (jumlahPercobaan >= maxPercobaan && tebakan !== angkaRahasia) {
+        hasil.textContent = `😢 Kesempatan habis! Angka benar ${angkaRahasia}.`;
+        hasil.style.color = "red";
+        input.disabled = true;
+
+        Swal.fire({
+          icon: 'error',
+          title: '😞 Kesempatan Habis!',
+          text: `Angka yang benar adalah ${angkaRahasia}.`,
+          confirmButtonText: 'Coba Lagi 🔄',
+          confirmButtonColor: '#d33'
+        }).then(resetGame);
+      }
+    }
+
+    function resetGame() {
+      angkaRahasia = Math.floor(Math.random() * 20) + 1;
+      jumlahPercobaan = 0;
+      input.value = "";
+      hasil.textContent = "";
+      percobaanText.textContent = "Percobaan: 0";
+      input.disabled = false;
+    }
+
+    // Efek confetti 🎉
+    function confetti() {
+      for (let i = 0; i < 20; i++) {
+        const partikel = document.createElement("div");
+        partikel.style.position = "fixed";
+        partikel.style.width = "10px";
+        partikel.style.height = "10px";
+        partikel.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        partikel.style.top = "-10px";
+        partikel.style.left = Math.random() * 100 + "vw";
+        partikel.style.borderRadius = "50%";
+        partikel.style.animation = "jatuh 2s linear forwards";
+        document.body.appendChild(partikel);
+        setTimeout(() => partikel.remove(), 2000);
+      }
+    }
+
+    // Tambahkan animasi confetti ke CSS
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes jatuh {
+        to {
+          transform: translateY(100vh);
+          opacity: 0;
+        }
+      }`;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
